@@ -55,7 +55,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <div className="scanlines"></div>
         {children}
       </body>
     </html>

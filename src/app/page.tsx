@@ -2,6 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getEndpoint, safeJson } from "../services/api";
+
+function generateUUID() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getDeviceUuid() {
+  if (typeof window === "undefined") return "";
+  let uuid = localStorage.getItem("device_uuid");
+  if (!uuid) {
+    uuid = generateUUID();
+    localStorage.setItem("device_uuid", uuid);
+  }
+  return uuid;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,7 +33,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [isShaking, setIsShaking] = useState(false);
 
@@ -22,17 +43,17 @@ export default function LoginPage() {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
+
       osc.type = type;
       osc.frequency.value = frequency;
-      
+
       // Retro 8-bit volume envelope
       gain.gain.setValueAtTime(0.08, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      
+
       osc.connect(gain);
       gain.connect(ctx.destination);
-      
+
       osc.start();
       osc.stop(ctx.currentTime + duration);
     } catch (e) {
@@ -58,10 +79,7 @@ export default function LoginPage() {
     playBeep(440.00, "triangle", 0.15);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://topupmas.azdhar.me/api/v1/";
-      const url = baseUrl.endsWith("/") ? `${baseUrl}auth/login` : `${baseUrl}/auth/login`;
-
-      const response = await fetch(url, {
+      const response = await fetch(getEndpoint("auth/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -69,26 +87,31 @@ export default function LoginPage() {
         body: JSON.stringify({
           username,
           password,
-          uuid: "device-uuid-asus-rog",
+          uuid: getDeviceUuid(),
         }),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
         throw new Error(data.message || data.error || "Login gagal! Silakan periksa kembali kredensial Anda.");
       }
 
+      // Save token to localStorage for subsequent API requests
+      const token = data.x_access_token || data.data?.x_access_token || data.token || data.data?.token || data.access_token || data.data?.access_token || data.data?.accessToken || data.accessToken;
+      if (token) {
+        localStorage.setItem("admin_token", token);
+      }
+
       // Fast-forward progress animation to Capped 100%
       setProgress(100);
-      setIsLoading(false);
-      setIsSuccess(true);
       playFanfare();
-      
-      // Auto-redirect to dashboard after fanfare (1200ms)
+
+      // Auto-redirect to dashboard after fanfare (400ms)
       setTimeout(() => {
+        setIsLoading(false);
         router.push("/dashboard");
-      }, 1200);
+      }, 400);
     } catch (err: any) {
       setIsLoading(false);
       setProgress(0);
@@ -127,13 +150,7 @@ export default function LoginPage() {
     });
   };
 
-  const handleReset = () => {
-    setIsSuccess(false);
-    setUsername("");
-    setPassword("");
-    setProgress(0);
-    playBeep(150, "sine", 0.1);
-  };
+  // Reset function not needed anymore as we redirect directly
 
 
 
@@ -165,7 +182,7 @@ export default function LoginPage() {
                 gain.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.05);
-              } catch(e) {}
+              } catch (e) { }
             }, 50);
           }
         }}
@@ -178,7 +195,7 @@ export default function LoginPage() {
       </button>
 
       <div className="w-full max-w-[520px] relative z-10">
-        
+
         {/* TOP BRANDING AREA */}
         <div className="flex flex-col items-center mb-6 text-center select-none">
           <div className="flex items-center gap-1.5 justify-center mb-1">
@@ -191,10 +208,9 @@ export default function LoginPage() {
         </div>
 
         {/* MAIN NEUTRAL-BRUTALIST CONTAINER */}
-        <div 
-          className={`retro-box w-full p-6 md:p-8 relative overflow-hidden transition-all duration-300 ${
-            isShaking ? "animate-[bounce_0.2s_infinite]" : ""
-          }`}
+        <div
+          className={`retro-box w-full p-6 md:p-8 relative overflow-hidden transition-all duration-300 ${isShaking ? "animate-[bounce_0.2s_infinite]" : ""
+            }`}
           style={{
             borderColor: "var(--border-color)",
             backgroundColor: "var(--surface)",
@@ -204,158 +220,117 @@ export default function LoginPage() {
           {/* Internal diagonal stripes overlay on the top border */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500"></div>
 
-          {!isSuccess ? (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-2">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-2">
 
-              {/* INPUT FIELDS */}
-              <div>
-                <label className="retro-label" htmlFor="username-input">
-                  USERNAME
-                </label>
+            {/* INPUT FIELDS */}
+            <div>
+              <label className="retro-label" htmlFor="username-input">
+                USERNAME
+              </label>
+              <input
+                id="username-input"
+                type="text"
+                placeholder="Masukkan Username Admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="retro-input"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label className="retro-label" htmlFor="password-input">
+                PASSWORD
+              </label>
+              <div className="relative w-full">
                 <input
-                  id="username-input"
-                  type="text"
-                  placeholder="Masukkan Username Admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="password-input"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="retro-input"
+                  style={{ paddingRight: "54px" }}
                   disabled={isLoading}
                 />
-              </div>
-
-              <div>
-                <label className="retro-label" htmlFor="password-input">
-                  PASSWORD
-                </label>
-                <div className="relative w-full">
-                  <input
-                    id="password-input"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="retro-input"
-                    style={{ paddingRight: "54px" }}
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPassword(!showPassword);
-                      playBeep(250, "sine", 0.05);
-                    }}
-                    disabled={isLoading}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border-4 border-[#0f172a] p-1 flex items-center justify-center cursor-pointer hover:bg-[#e4f2fa] active:translate-y-[calc(-50%+2px)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none hover:translate-x-[2px] active:translate-x-[2px]"
-                    style={{
-                      height: "36px",
-                      width: "36px",
-                      transform: "translateY(-50%)",
-                      zIndex: 2,
-                    }}
-                    title={showPassword ? "Sembunyikan Password" : "Tampilkan Password"}
-                  >
-                    <span className="material-symbols-outlined text-[#164576] font-bold text-lg select-none">
-                      {showPassword ? "visibility" : "visibility_off"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* CHECKPOINT REMEMBER ME */}
-              <div className="flex items-center justify-between font-mono text-xs font-bold text-[#164576]">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5 border-4 border-[#0f172a] rounded-none checked:bg-[#BF2D32] accent-[#BF2D32] cursor-pointer"
-                  />
-                  <span>CHECKPOINT (INGAT SAYA)</span>
-                </label>
-                <a href="#" className="underline hover:text-[#BF2D32] transition-colors">LUPA KUNCI?</a>
-              </div>
-
-              {/* DYNAMIC ERROR MESSAGE CONTAINER */}
-              {errorMsg && (
-                <div className="bg-[#fce8e9] border-4 border-[#BF2D32] text-[#BF2D32] p-3 font-mono text-xs font-bold flex items-center gap-2 shadow-[2px_2px_0px_0px_#BF2D32]">
-                  <span className="material-symbols-outlined">warning</span>
-                  <span>{errorMsg}</span>
-                </div>
-              )}
-
-              {/* SUBMIT BUTTON / PROGRESS BAR */}
-              <div className="mt-2">
-                {!isLoading ? (
-                  <button
-                    type="submit"
-                    className="retro-button w-full text-base font-black flex items-center justify-center gap-2"
-                    style={{
-                      backgroundColor: "var(--tertiary)",
-                      color: "var(--on-tertiary)"
-                    }}
-                  >
-                    <span>ENTER SERVICE PORTAL</span>
-                    <span className="material-symbols-outlined font-bold">login</span>
-                  </button>
-                ) : (
-                  <div className="w-full border-4 border-[#0f172a] p-3 bg-[#e4f2fa] relative">
-                    <div className="flex justify-between items-center mb-2 font-mono text-xs font-black text-[#164576]">
-                      <span>CONNECTING TO DATASERVER...</span>
-                      <span>{progress}%</span>
-                    </div>
-                    {/* Retro XP / Loading bar */}
-                    <div className="w-full h-6 border-4 border-[#0f172a] bg-white overflow-hidden p-0.5">
-                      <div 
-                        className="h-full bg-gradient-to-r from-[#FDCC4E] to-[#B1D99D] transition-all duration-150"
-                        style={{ 
-                          width: `${progress}%`,
-                          backgroundImage: "repeating-linear-gradient(45deg, #43B047, #43B047 10px, #006e19 10px, #006e19 20px)"
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </form>
-          ) : (
-            /* SUCCESS PORTAL SCREEN */
-            <div className="flex flex-col items-center text-center py-4">
-              <div className="w-20 h-20 bg-[#B1D99D] border-4 border-[#0f172a] flex items-center justify-center text-5xl mb-4 shadow-[4px_4px_0px_0px_#0f172a]">
-                🎮
-              </div>
-              <h2 className="text-2xl font-black uppercase text-[#0f172a] mb-2" style={{ fontFamily: "var(--font-headline)" }}>
-                PORTAL DIBUKA!
-              </h2>
-              <div className="bg-[#B1D99D]/30 border-4 border-[#B1D99D] text-[#164576] p-4 font-mono text-sm font-bold max-w-sm mb-6 rounded-none">
-                Selamat datang kembali, <span className="underline">{username}</span>!<br/>
-                Sesi portal Anda telah siap.
-              </div>
-
-              <div className="flex flex-col gap-3 w-full">
-                <button
-                  onClick={() => {
-                    playBeep(523.25, "triangle", 0.15);
-                    router.push("/dashboard");
-                  }}
-                  className="retro-button w-full text-base font-black flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: "#B1D99D",
-                    color: "#164576"
-                  }}
-                >
-                  <span>GO TO DASHBOARD</span>
-                  <span className="material-symbols-outlined">dashboard</span>
-                </button>
-
                 <button
                   type="button"
-                  onClick={handleReset}
-                  className="font-mono text-xs font-bold text-[#6b6375] hover:text-[#BF2D32] underline cursor-pointer mt-2"
+                  onClick={() => {
+                    setShowPassword(!showPassword);
+                    playBeep(250, "sine", 0.05);
+                  }}
+                  disabled={isLoading}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border-4 border-[#0f172a] p-1 flex items-center justify-center cursor-pointer hover:bg-[#e4f2fa] active:translate-y-[calc(-50%+2px)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none hover:translate-x-[2px] active:translate-x-[2px]"
+                  style={{
+                    height: "36px",
+                    width: "36px",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                  }}
+                  title={showPassword ? "Sembunyikan Password" : "Tampilkan Password"}
                 >
-                  KELUAR PORTAL & KEMBALI
+                  <span className="material-symbols-outlined text-[#164576] font-bold text-lg select-none">
+                    {showPassword ? "visibility" : "visibility_off"}
+                  </span>
                 </button>
               </div>
             </div>
-          )}
+
+            {/* CHECKPOINT REMEMBER ME */}
+            <div className="flex items-center justify-between font-mono text-xs font-bold text-[#164576]">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 border-4 border-[#0f172a] rounded-none checked:bg-[#BF2D32] accent-[#BF2D32] cursor-pointer"
+                />
+                <span>CHECKPOINT (INGAT SAYA)</span>
+              </label>
+              <a href="#" className="underline hover:text-[#BF2D32] transition-colors">LUPA KUNCI?</a>
+            </div>
+
+            {/* DYNAMIC ERROR MESSAGE CONTAINER */}
+            {errorMsg && (
+              <div className="bg-[#fce8e9] border-4 border-[#BF2D32] text-[#BF2D32] p-3 font-mono text-xs font-bold flex items-center gap-2 shadow-[2px_2px_0px_0px_#BF2D32]">
+                <span className="material-symbols-outlined">warning</span>
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {/* SUBMIT BUTTON / PROGRESS BAR */}
+            <div className="mt-2">
+              {!isLoading ? (
+                <button
+                  type="submit"
+                  className="retro-button w-full text-base font-black flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: "var(--tertiary)",
+                    color: "var(--on-tertiary)"
+                  }}
+                >
+                  <span>ENTER SERVICE PORTAL</span>
+                  <span className="material-symbols-outlined font-bold">login</span>
+                </button>
+              ) : (
+                <div className="w-full border-4 border-[#0f172a] p-3 bg-[#e4f2fa] relative">
+                  <div className="flex justify-between items-center mb-2 font-mono text-xs font-black text-[#164576]">
+                    <span>CONNECTING TO DATASERVER...</span>
+                    <span>{progress}%</span>
+                  </div>
+                  {/* Retro XP / Loading bar */}
+                  <div className="w-full h-6 border-4 border-[#0f172a] bg-white overflow-hidden p-0.5">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#FDCC4E] to-[#B1D99D] transition-all duration-150"
+                      style={{
+                        width: `${progress}%`,
+                        backgroundImage: "repeating-linear-gradient(45deg, #43B047, #43B047 10px, #006e19 10px, #006e19 20px)"
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </form>
 
           {/* Retro details/decorations inside the box corners */}
           <div className="absolute bottom-2 right-2 font-mono text-[9px] font-bold text-gray-400 select-none">
