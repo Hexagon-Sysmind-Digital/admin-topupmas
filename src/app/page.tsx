@@ -350,7 +350,7 @@ export default function LoginPage() {
             <span className="w-3 h-3 bg-[#B1D99D] border-2 border-[#0f172a]"></span>
           </div>
           <a
-            href="https://topupmas.com"
+            href="https://topupmas.app"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playBeep(200, "sine", 0.05)}
