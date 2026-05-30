@@ -116,6 +116,47 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* 3.5. DAILY TRANSACTION CHART */}
+        <div className={styles.cardProviders} style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column' }}>
+          <h3 className={styles.cardTitle}>
+            <span className="material-symbols-outlined">bar_chart</span>
+            Transaksi Harian
+          </h3>
+          
+          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px', padding: '16px 0', borderBottom: '3px solid #0f172a', marginBottom: '12px' }}>
+            {[
+              { day: "Sen", val: 65, color: "#BF2D32" },
+              { day: "Sel", val: 45, color: "#FDCC4E" },
+              { day: "Rab", val: 80, color: "#B1D99D" },
+              { day: "Kam", val: 50, color: "#78BFE4" },
+              { day: "Jum", val: 95, color: "#ffb4ab" },
+              { day: "Sab", val: 70, color: "#355f6b" },
+              { day: "Min", val: 85, color: "#FDCC4E" },
+            ].map((d, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                <div style={{ position: 'relative', width: '100%', height: '140px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <div style={{
+                    width: '24px',
+                    height: `${d.val}%`,
+                    backgroundColor: d.color,
+                    border: '3px solid #0f172a',
+                    borderBottom: 'none',
+                    borderTopLeftRadius: '6px',
+                    borderTopRightRadius: '6px',
+                    boxShadow: '2px -2px 0px 0px rgba(0,0,0,1)',
+                    transition: 'height 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}></div>
+                </div>
+                <span className="font-mono text-[10px] font-black text-[#164576] uppercase">{d.day}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between items-center text-xs font-mono font-bold text-[#41484a] mt-auto">
+            <span>Total Minggu Ini</span>
+            <span className="text-[#164576] text-lg font-black tracking-tighter">Rp 128.450k</span>
+          </div>
+        </div>
+
         {/* 4. TOP PRODUCTS */}
         <div className={styles.cardProducts}>
           <h3 className={styles.cardTitle}>

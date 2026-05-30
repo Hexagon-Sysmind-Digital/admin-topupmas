@@ -220,7 +220,7 @@ export default function GroupsPage() {
 
           {/* Top Bar */}
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
-            <h3 className={styles.cardTitle} style={{ marginBottom: 0 }}>
+            <h3 className={styles.cardTitle} style={{ marginBottom: 0, backgroundColor: "#ffffff", padding: "8px 16px", border: "4px solid #0f172a", boxShadow: "4px 4px 0px 0px #0f172a" }}>
               <span className="material-symbols-outlined">format_list_bulleted</span>
               Daftar Group Layanan
             </h3>
@@ -251,11 +251,14 @@ export default function GroupsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {groups.map((group) => (
+              {groups.map((group, idx) => {
+                const cardColors = ["#FDCC4E", "#B1D99D", "#ffb4ab", "#ffffff"];
+                const bgColor = cardColors[idx % cardColors.length];
+                return (
                 <div
                   key={group.id}
-                  className="retro-box p-4 flex flex-col items-center justify-between gap-3 text-center bg-white relative hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                  style={{ minHeight: "160px" }}
+                  className="retro-box p-4 flex flex-col items-center justify-between gap-3 text-center relative hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                  style={{ minHeight: "160px", backgroundColor: bgColor }}
                 >
 
 
@@ -287,7 +290,8 @@ export default function GroupsPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -382,8 +386,8 @@ export default function GroupsPage() {
               style={{
                 pointerEvents: "auto",
                 position: "relative",
-                backgroundColor: isSuccess ? "#eaf7ed" : isError ? "#fce8e9" : "#e4f2fa",
-                color: isSuccess ? "#2d6a3e" : isError ? "#ba1a1a" : "#164576",
+                backgroundColor: isSuccess ? "#B1D99D" : isError ? "#BF2D32" : "#78BFE4",
+                color: isSuccess ? "#164576" : isError ? "#ffffff" : "#164576",
                 border: "4px solid #0f172a",
                 boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)",
                 padding: "20px 24px",
@@ -432,7 +436,7 @@ export default function GroupsPage() {
                   bottom: 0,
                   left: 0,
                   height: "6px",
-                  backgroundColor: isSuccess ? "#2d6a3e" : isError ? "#ba1a1a" : "#164576",
+                  backgroundColor: isSuccess ? "#164576" : isError ? "#FDCC4E" : "#164576",
                   animation: "shrinkWidth 4s linear forwards"
                 }}
               />
@@ -450,21 +454,22 @@ export default function GroupsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className={styles.modalHeader} style={{ backgroundColor: "#ffdad6", borderBottom: "3px solid #0f172a" }}>
-              <div className={styles.modalTitle} style={{ color: "#ba1a1a" }}>
+            <div className={styles.modalHeader} style={{ backgroundColor: "#BF2D32", borderBottom: "4px solid #0f172a" }}>
+              <div className={styles.modalTitle} style={{ color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined">warning</span>
                 {alertDialog.title}
               </div>
               <button
                 className={styles.modalCloseBtn}
+                style={{ color: "#ffffff" }}
                 onClick={() => setAlertDialog({ isOpen: false, title: "", message: "" })}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
               </button>
             </div>
             {/* Body */}
-            <div className={styles.modalBody} style={{ padding: "20px" }}>
-              <p className="font-mono text-sm font-bold text-[#41484a] leading-relaxed mb-6">
+            <div className={styles.modalBody} style={{ padding: "24px" }}>
+              <p className="font-mono text-sm font-bold text-[#164576] leading-relaxed mb-6">
                 {alertDialog.message}
               </p>
               <button
@@ -472,7 +477,7 @@ export default function GroupsPage() {
                 className="retro-button w-full text-sm font-black py-2.5"
                 style={{
                   backgroundColor: "#FDCC4E",
-                  color: "#735f00",
+                  color: "#164576",
                 }}
               >
                 MENGERTI
@@ -491,21 +496,22 @@ export default function GroupsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className={styles.modalHeader} style={{ backgroundColor: "#ffdad6", borderBottom: "3px solid #0f172a" }}>
-              <div className={styles.modalTitle} style={{ color: "#ba1a1a" }}>
+            <div className={styles.modalHeader} style={{ backgroundColor: "#FDCC4E", borderBottom: "4px solid #0f172a" }}>
+              <div className={styles.modalTitle} style={{ color: "#164576", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined">help_center</span>
                 {confirmDialog.title}
               </div>
               <button
                 className={styles.modalCloseBtn}
+                style={{ color: "#164576" }}
                 onClick={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
               </button>
             </div>
             {/* Body */}
-            <div className={styles.modalBody} style={{ padding: "20px" }}>
-              <p className="font-mono text-sm font-bold text-[#41484a] leading-relaxed mb-6">
+            <div className={styles.modalBody} style={{ padding: "24px" }}>
+              <p className="font-mono text-sm font-bold text-[#164576] leading-relaxed mb-6">
                 {confirmDialog.message}
               </p>
               <div className="flex gap-3">

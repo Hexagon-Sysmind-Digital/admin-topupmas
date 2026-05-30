@@ -78,7 +78,7 @@ export default function ProductPage() {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const showConfirm = (title: string, message: string, onConfirm: () => void) => {
@@ -338,7 +338,7 @@ export default function ProductPage() {
         <div className={styles.cardProducts} style={{ gridColumn: "span 12" }}>
 
           {/* Top Bar: Search, Filter, Add Button */}
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6 w-full">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6 w-full" style={{ backgroundColor: "#FDCC4E", border: "4px solid #0f172a", borderRadius: "16px", boxShadow: "4px 4px 0px 0px rgba(0,0,0,1)", padding: "16px" }}>
             <div style={{ flex: "1 1 auto", width: "100%", minWidth: "250px" }}>
               <input
                 type="text"
@@ -393,10 +393,10 @@ export default function ProductPage() {
               Tidak ada data produk yang cocok atau terdaftar.
             </div>
           ) : (
-            <div className={styles.tableContainer}>
+            <div className={styles.tableContainer} style={{ backgroundColor: "#e4f2fa", border: "4px solid #0f172a", borderRadius: "16px", boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)", padding: "4px 16px 16px 16px" }}>
               <table className={styles.table}>
                 <thead>
-                  <tr>
+                  <tr style={{ backgroundColor: "#B1D99D" }}>
                     <th>SKU Code</th>
                     <th>Nama Item</th>
                     <th>Brand</th>
@@ -439,9 +439,8 @@ export default function ProductPage() {
                           <span
                             onClick={() => handleToggleActive(p)}
                             style={{ cursor: "pointer", fontSize: "11px", padding: "6px 12px", borderWidth: "2.5px" }}
-                            className={`${styles.statusBadge} ${
-                              p.is_active ? styles.statusOnline : styles.statusOffline
-                            }`}
+                            className={`${styles.statusBadge} ${p.is_active ? styles.statusOnline : styles.statusOffline
+                              }`}
                           >
                             {p.is_active ? "ACTIVE" : "INACTIVE"}
                           </span>
@@ -450,14 +449,14 @@ export default function ProductPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => openEditModal(p)}
-                              className="font-mono text-xs font-black px-3 py-1.5 border-2 border-[#0f172a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-[#FDCC4E] text-[#735f00] cursor-pointer hover:translate-y-[0.5px]"
+                              className="font-mono text-xs font-black px-3 py-1.5 border-2 border-[#0f172a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-[#FDCC4E] text-[#164576] cursor-pointer hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:shadow-none transition-all"
                               style={{ fontSize: "12px" }}
                             >
                               EDIT
                             </button>
                             <button
                               onClick={() => handleDeleteClick(p.code)}
-                              className="font-mono text-xs font-black px-3 py-1.5 border-2 border-[#0f172a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-[#fce8e9] text-[#ba1a1a] cursor-pointer hover:translate-y-[0.5px]"
+                              className="font-mono text-xs font-black px-3 py-1.5 border-2 border-[#0f172a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-[#BF2D32] text-[#ffffff] cursor-pointer hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:shadow-none transition-all"
                               style={{ fontSize: "12px" }}
                             >
                               DEL
@@ -714,7 +713,7 @@ export default function ProductPage() {
         </div>
       )}
       {/* ========== TOAST NOTIFICATION CONTAINER ========== */}
-      <div 
+      <div
         style={{
           position: "fixed",
           top: "100px",
@@ -738,8 +737,8 @@ export default function ProductPage() {
               style={{
                 pointerEvents: "auto",
                 position: "relative",
-                backgroundColor: isSuccess ? "#eaf7ed" : isError ? "#fce8e9" : "#e4f2fa",
-                color: isSuccess ? "#2d6a3e" : isError ? "#ba1a1a" : "#164576",
+                backgroundColor: isSuccess ? "#B1D99D" : isError ? "#BF2D32" : "#78BFE4",
+                color: isSuccess ? "#164576" : isError ? "#ffffff" : "#164576",
                 border: "4px solid #0f172a",
                 boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)",
                 padding: "20px 24px",
@@ -788,7 +787,7 @@ export default function ProductPage() {
                   bottom: 0,
                   left: 0,
                   height: "6px",
-                  backgroundColor: isSuccess ? "#2d6a3e" : isError ? "#ba1a1a" : "#164576",
+                  backgroundColor: isSuccess ? "#164576" : isError ? "#FDCC4E" : "#164576",
                   animation: "shrinkWidth 4s linear forwards"
                 }}
               />
@@ -806,21 +805,22 @@ export default function ProductPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className={styles.modalHeader} style={{ backgroundColor: "#ffdad6", borderBottom: "3px solid #0f172a" }}>
-              <div className={styles.modalTitle} style={{ color: "#ba1a1a" }}>
+            <div className={styles.modalHeader} style={{ backgroundColor: "#BF2D32", borderBottom: "4px solid #0f172a" }}>
+              <div className={styles.modalTitle} style={{ color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined">warning</span>
                 {alertDialog.title}
               </div>
               <button
                 className={styles.modalCloseBtn}
+                style={{ color: "#ffffff" }}
                 onClick={() => setAlertDialog({ isOpen: false, title: "", message: "" })}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
               </button>
             </div>
             {/* Body */}
-            <div className={styles.modalBody} style={{ padding: "20px" }}>
-              <p className="font-mono text-sm font-bold text-[#41484a] leading-relaxed mb-6">
+            <div className={styles.modalBody} style={{ padding: "24px" }}>
+              <p className="font-mono text-sm font-bold text-[#164576] leading-relaxed mb-6">
                 {alertDialog.message}
               </p>
               <button
@@ -828,7 +828,7 @@ export default function ProductPage() {
                 className="retro-button w-full text-sm font-black py-2.5"
                 style={{
                   backgroundColor: "#FDCC4E",
-                  color: "#735f00",
+                  color: "#164576",
                 }}
               >
                 MENGERTI
@@ -847,21 +847,22 @@ export default function ProductPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className={styles.modalHeader} style={{ backgroundColor: "#ffdad6", borderBottom: "3px solid #0f172a" }}>
-              <div className={styles.modalTitle} style={{ color: "#ba1a1a" }}>
+            <div className={styles.modalHeader} style={{ backgroundColor: "#FDCC4E", borderBottom: "4px solid #0f172a" }}>
+              <div className={styles.modalTitle} style={{ color: "#164576", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined">help_center</span>
                 {confirmDialog.title}
               </div>
               <button
                 className={styles.modalCloseBtn}
+                style={{ color: "#164576" }}
                 onClick={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
               </button>
             </div>
             {/* Body */}
-            <div className={styles.modalBody} style={{ padding: "20px" }}>
-              <p className="font-mono text-sm font-bold text-[#41484a] leading-relaxed mb-6">
+            <div className={styles.modalBody} style={{ padding: "24px" }}>
+              <p className="font-mono text-sm font-bold text-[#164576] leading-relaxed mb-6">
                 {confirmDialog.message}
               </p>
               <div className="flex gap-3">
@@ -891,7 +892,8 @@ export default function ProductPage() {
         </div>
       )}
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes toastFadeInOut {
           0% {
             transform: translateX(120%);
